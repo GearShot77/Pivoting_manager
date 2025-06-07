@@ -10,7 +10,7 @@ Current functionality:
 5. You can run a command through proxychains to verify 
 6. When creating a tunnel, a file is automatically created.conf for proxychains
 
-This is the first version with the basic chisel functionality (Dynamic Port Forwarding) and in the future other types of tunneling will be supported.
+This is the first version with the basic chisel functionality (Reverse dynamic port forwarding) and in the future other types of tunneling will be supported.
 
 ![alt text](image.png)
 

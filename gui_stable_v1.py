@@ -71,7 +71,7 @@ class SessionManagerApp(tk.Tk):
         self.log_text.see(tk.END)
         self.log_text.config(state=tk.DISABLED)
 
-        # Также пишем в файл
+        
         with open("session_logs/log.txt", "a") as f:
             f.write(full_msg + "\n")
 
@@ -102,6 +102,11 @@ class SessionManagerApp(tk.Tk):
         ping_entry.grid(row=2, column=1)
         ping_entry.insert(0, "10")
 
+        tk.Label(dialog, text="Инструмент:").grid(row=3, column=0, sticky=tk.E)
+        tool_combo = ttk.Combobox(dialog, values=["chisel", "ssh", "socat", "other"])
+        tool_combo.set("chisel")
+        tool_combo.grid(row=3, column=1)
+
         def on_create():
             ip = ip_entry.get().strip()
             port = port_entry.get().strip()
@@ -116,7 +121,7 @@ class SessionManagerApp(tk.Tk):
             self.create_session(ip, port, ping_int)
             dialog.destroy()
 
-        tk.Button(dialog, text="Создать", command=on_create).grid(row=3, column=0, columnspan=2, pady=5)
+        tk.Button(dialog, text="Создать", command=on_create).grid(row=4, column=1, columnspan=2, pady=5)
 
     def create_session(self, ip, port, ping_interval, sid=None, tunnels=None):
         if sid is None:

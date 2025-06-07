@@ -35,15 +35,15 @@ class SessionManagerApp(tk.Tk):
         frame_buttons = tk.Frame(self)
         frame_buttons.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        tk.Button(frame_buttons, text="Создать сессию", command=self.create_session_dialog).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Закрыть сессию", command=self.close_session_dialog).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Обновить", command=self.refresh_sessions).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Выполнить proxychains команду", command=self.run_proxychains_command).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Граф туннелей", command=self.show_graph).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Экспорт сессий", command=self.export_sessions).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_buttons, text="Импорт сессий", command=self.import_sessions).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="Create session", command=self.create_session_dialog).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="Close session", command=self.close_session_dialog).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="update", command=self.refresh_sessions).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="get proxychains cmd", command=self.run_proxychains_command).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="tunnel graph", command=self.show_graph).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="export sessions", command=self.export_sessions).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_buttons, text="import sessions", command=self.import_sessions).pack(side=tk.LEFT, padx=5)
 
-        tk.Label(frame_buttons, text="Фильтр логов:").pack(side=tk.LEFT)
+        tk.Label(frame_buttons, text="log filtres:").pack(side=tk.LEFT)
         self.filter_entry = tk.Entry(frame_buttons)
         self.filter_entry.pack(side=tk.LEFT)
         self.filter_entry.bind("<KeyRelease>", self.apply_log_filter)
@@ -87,7 +87,7 @@ class SessionManagerApp(tk.Tk):
 
     def create_session_dialog(self):
         dialog = tk.Toplevel(self)
-        dialog.title("Создать сессию")
+        dialog.title("Create session")
 
         tk.Label(dialog, text="IP:").grid(row=0, column=0, sticky=tk.E)
         ip_entry = tk.Entry(dialog)
@@ -102,7 +102,7 @@ class SessionManagerApp(tk.Tk):
         ping_entry.grid(row=2, column=1)
         ping_entry.insert(0, "10")
 
-        tk.Label(dialog, text="Инструмент:").grid(row=3, column=0, sticky=tk.E)
+        tk.Label(dialog, text="tool:").grid(row=3, column=0, sticky=tk.E)
         tool_combo = ttk.Combobox(dialog, values=["chisel", "ssh", "socat", "other"])
         tool_combo.set("chisel")
         tool_combo.grid(row=3, column=1)
@@ -113,15 +113,15 @@ class SessionManagerApp(tk.Tk):
             try:
                 ping_int = int(ping_entry.get().strip())
             except ValueError:
-                messagebox.showerror("Ошибка", "Пинг интервал должен быть числом")
+                messagebox.showerror("Error", "The ping interval must be a number")
                 return
             if not ip or not port or ping_int < 1:
-                messagebox.showerror("Ошибка", "Проверьте IP, PORT и интервал пинга")
+                messagebox.showerror("Error", "Check IP, PORT and ping")
                 return
             self.create_session(ip, port, ping_int)
             dialog.destroy()
 
-        tk.Button(dialog, text="Создать", command=on_create).grid(row=4, column=1, columnspan=2, pady=5)
+        tk.Button(dialog, text="Create", command=on_create).grid(row=4, column=1, columnspan=2, pady=5)
 
     def create_session(self, ip, port, ping_interval, sid=None, tunnels=None):
         if sid is None:
@@ -131,7 +131,7 @@ class SessionManagerApp(tk.Tk):
             if sid > self.session_id_counter:
                 self.session_id_counter = sid
 
-        self.log(f"Запускаем chisel server на {ip}:{port} (сессия {sid})")
+        self.log(f"launching chisel server on {ip}:{port} (session {sid})")
 
         try:
             proc = subprocess.Popen(
@@ -142,7 +142,7 @@ class SessionManagerApp(tk.Tk):
                 bufsize=1
             )
         except Exception as e:
-            messagebox.showerror("Ошибка запуска", str(e))
+            messagebox.showerror("Error launch", str(e))
             return
 
         session = {
@@ -164,7 +164,7 @@ class SessionManagerApp(tk.Tk):
 
         self.create_proxychains_conf(sid, session["tunnels"])
 
-        self.log(f"Сессия {sid} создана и chisel запущен")
+        self.log(f"Sessions {sid} create and chisel launch")
 
     def ping_loop(self, sid):
         session = self.sessions.get(sid)
@@ -203,7 +203,7 @@ class SessionManagerApp(tk.Tk):
                 tun = tun_match.group(2)
                 if tun not in session["tunnels"]:
                     session["tunnels"].append(tun)
-                    self.log(f"Клиент подключен к {sid} сессии: {line}")
+                    self.log(f"client connect to {sid} session: {line}")
                     self.create_proxychains_conf(sid, session["tunnels"])
             elif any(x in line for x in ["Fingerprint", "Reverse tunnelling enabled", "Listening on "]):
                 continue
@@ -227,7 +227,7 @@ class SessionManagerApp(tk.Tk):
                     except Exception:
                         continue
         except Exception as e:
-            self.log(f"Ошибка при создании proxychains конфига: {e}")
+            self.log(f"Error when creating proxychains config: {e}")
 
     def refresh_sessions(self):
         self.tree.delete(*self.tree.get_children())
@@ -243,7 +243,7 @@ class SessionManagerApp(tk.Tk):
     def close_session_dialog(self):
         sid = self.get_selected_session_id()
         if sid is None:
-            messagebox.showwarning("Внимание", "Выберите сессию для закрытия")
+            messagebox.showwarning("Attention", "Select the session to close")
             return
         self.close_session(sid)
 
@@ -255,7 +255,7 @@ class SessionManagerApp(tk.Tk):
         if proc.poll() is None:
             proc.terminate()
             proc.wait(timeout=5)
-        self.log(f"Сессия {sid} остановлена")
+        self.log(f"session {sid} is stopped")
         del self.sessions[sid]
         self.refresh_sessions()
 
@@ -270,13 +270,13 @@ class SessionManagerApp(tk.Tk):
     def run_proxychains_command(self):
         sid = self.get_selected_session_id()
         if sid is None:
-            messagebox.showwarning("Внимание", "Выберите сессию")
+            messagebox.showwarning("Attention", "Select the session")
             return
 
         dialog = tk.Toplevel(self)
-        dialog.title("Выполнить команду через proxychains")
+        dialog.title("Run the command via proxychains")
 
-        tk.Label(dialog, text="Команда:").pack()
+        tk.Label(dialog, text="cmd:").pack()
         cmd_entry = tk.Entry(dialog, width=80)
         cmd_entry.pack()
 
@@ -286,11 +286,11 @@ class SessionManagerApp(tk.Tk):
         def run_cmd():
             cmd = cmd_entry.get().strip()
             if not cmd:
-                messagebox.showwarning("Внимание", "Введите команду")
+                messagebox.showwarning("Attention", "Enter the command")
                 return
             conf_path = f"proxychains_confs/session_{sid}.conf"
             full_cmd = f"proxychains -f {conf_path} {cmd}"
-            self.log(f"Выполняем: {full_cmd}")
+            self.log(f"we are carrying out: {full_cmd}")
 
             def worker():
                 try:
@@ -299,13 +299,13 @@ class SessionManagerApp(tk.Tk):
                         output_text.insert(tk.END, line)
                         output_text.see(tk.END)
                     proc.wait()
-                    self.log(f"Команда завершена с кодом {proc.returncode}")
+                    self.log(f"The command is completed with the code {proc.returncode}")
                 except Exception as e:
-                    self.log(f"Ошибка при выполнении команды: {e}")
+                    self.log(f"Error when executing the command: {e}")
 
             threading.Thread(target=worker, daemon=True).start()
 
-        tk.Button(dialog, text="Запустить", command=run_cmd).pack()
+        tk.Button(dialog, text="launch", command=run_cmd).pack()
 
     def show_graph(self):
         G = nx.DiGraph()
@@ -317,7 +317,7 @@ class SessionManagerApp(tk.Tk):
 
         plt.figure(figsize=(10, 6))
         nx.draw_networkx(G, with_labels=True, node_size=2000, node_color="lightblue", arrowsize=20)
-        plt.title("Граф туннелей")
+        plt.title("tunnels graph")
         plt.show()
 
     def export_sessions(self):
@@ -338,9 +338,9 @@ class SessionManagerApp(tk.Tk):
         try:
             with open(path, "w") as f:
                 json.dump(data, f, indent=4)
-            self.log(f"Сессии экспортированы в {path}")
+            self.log(f"Sessions are exported to {path}")
         except Exception as e:
-            messagebox.showerror("Ошибка экспорта", str(e))
+            messagebox.showerror("Export error", str(e))
 
     def import_sessions(self):
         path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
@@ -354,9 +354,9 @@ class SessionManagerApp(tk.Tk):
                 start_time = datetime.datetime.fromisoformat(sess["start_time"])
                 self.create_session(sess["ip"], sess["port"], sess["ping_interval"], sid=sid, tunnels=sess["tunnels"])
                 
-            self.log(f"Сессии импортированы из {path}")
+            self.log(f"Sessions imported from {path}")
         except Exception as e:
-            messagebox.showerror("Ошибка импорта", str(e))
+            messagebox.showerror("Import error", str(e))
 
 
 if __name__ == "__main__":
